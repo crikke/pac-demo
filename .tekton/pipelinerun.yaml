@@ -17,7 +17,8 @@ metadata:
 
     # Use golangci-lint from the hub to test our Golang project
     pipelinesascode.tekton.dev/task-1: "https://raw.githubusercontent.com/stakater-tekton-catalog/create-git-tag/0.0.12/task/stakater-create-git-tag/stakater-create-git-tag.yaml"
-    pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/0.0.15/task/stakater-helm-push/stakater-helm-push.yaml"
+    # pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/0.0.15/task/stakater-helm-push/stakater-helm-push.yaml"
+    pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/feature/chart-path-parma/task/stakater-helm-push/stakater-helm-push.yaml"
 
     # You can add more tasks by increasing the suffix number, you can specify
     # them as array to have multiple of them.
@@ -81,7 +82,7 @@ spec:
           - name: source
             workspace: source
         params:
-            - name: helm_registry
+            - name: REGISTRY
               value: nexus-rm-nexus-repository-manager.default.svc.cluster.local:8081
             - name: HELM_REG_CREDS_SECRET_NAME
               value: helm-reg-creds

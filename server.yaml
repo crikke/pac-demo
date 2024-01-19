@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: httpserver
+  name: httpserver
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpserver
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: httpserver
+    spec:
+      containers:
+      - image: twostoryrobot/simple-file-upload
+        name: simple-file-upload
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: uploads
+          mountPath: /uploads
+      volumes:
+      - name: uploads
+        emptyDir: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: httpserver
+  name: httpserver
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: httpserver
+status:
+  loadBalancer: {}
