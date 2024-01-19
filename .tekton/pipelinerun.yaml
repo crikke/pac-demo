@@ -57,11 +57,11 @@ spec:
           - name: revision
             value: $(params.revision)
             workspace: source
-      - name: stakater-create-git-tag-0-0-12
+      - name: stakater-create-git-tag
         runAfter:
          - fetch-repository
         taskRef:
-           name: stakater-create-git-tag-0.0.12
+           name: stakater-create-git-tag
            kind: Task
         params:
           - name: PR_NUMBER
