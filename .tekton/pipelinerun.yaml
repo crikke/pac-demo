@@ -61,7 +61,7 @@ spec:
          - fetch-repository
         taskRef:
            name: stakater-create-git-tag-0.0.12
-           kind: ClusterTask
+           kind: Task
         params:
           - name: PR_NUMBER
             value: "NA"
