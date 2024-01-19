@@ -1,112 +1,112 @@
-apiVersion: tekton.dev/v1beta1
-kind: PipelineRun
-metadata:
-  name: push-main
-  annotations:
-    pipelinesascode.tekton.dev/on-event: "[push]"
-    pipelinesascode.tekton.dev/on-target-branch: "main"
-    pipelinesascode.tekton.dev/max-keep-runs: "2"
-    pipelinesascode.tekton.dev/task: "[https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/feature/chart-path-parma/task/stakater-helm-push/stakater-helm-push.yaml]"
-spec:
-  params:
-    - name: repo_url
-      value: "git@bitbucket.org:rabbitmqwebhook/rabbitmq-test.git"
-    - name: gitrevision
-      value: {{revision}}
-    - name: repo_path
-      value: {{repo_name}}
-    - name: helm_registry
-      value: "{{neuxs_registry}}" # TODO this prob is worng
-  pipelineSpec:
-    params:
-      - name: repo_url
-      - name: gitrevision
-      - name: repo_path
-      - name: helm_registry
-    workspaces:
-      - name: source
-      - name: ssh-directory
-    tasks:
-      - name: fetch-repository
-        taskRef:
-          name: git-clone
-          kind: ClusterTask
-        workspaces:
-          - name: output
-            workspace: source
-          - name: ssh-directory
-            workspace: ssh-directory
-        params:
-          - name: depth
-            value: "0"
-          - name: url
-            value: $(params.repo_url)
-          - name: revision
-            value: $(params.gitrevision)
-      - name: helm-push
-        taskRef:
-          name: stakater-helm-push
-          kind: Task
-        workspaces:
-          - name: source
-            workspace: source
-        params:
-          - name: REGISTRY
-            value: $(params.helm_registry)
-          - name: CHART_PATH
-            value: "helm/"
+# apiVersion: tekton.dev/v1beta1
+# kind: PipelineRun
+# metadata:
+#   name: push-main
+#   annotations:
+#     pipelinesascode.tekton.dev/on-event: "[push]"
+#     pipelinesascode.tekton.dev/on-target-branch: "main"
+#     pipelinesascode.tekton.dev/max-keep-runs: "2"
+#     pipelinesascode.tekton.dev/task: "[https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/feature/chart-path-parma/task/stakater-helm-push/stakater-helm-push.yaml]"
+# spec:
+#   params:
+#     - name: repo_url
+#       value: "git@bitbucket.org:rabbitmqwebhook/rabbitmq-test.git"
+#     - name: gitrevision
+#       value: {{revision}}
+#     - name: repo_path
+#       value: {{repo_name}}
+#     - name: helm_registry
+#       value: "{{neuxs_registry}}" # TODO this prob is worng
+#   pipelineSpec:
+#     params:
+#       - name: repo_url
+#       - name: gitrevision
+#       - name: repo_path
+#       - name: helm_registry
+#     workspaces:
+#       - name: source
+#       - name: ssh-directory
+#     tasks:
+#       - name: fetch-repository
+#         taskRef:
+#           name: git-clone
+#           kind: ClusterTask
+#         workspaces:
+#           - name: output
+#             workspace: source
+#           - name: ssh-directory
+#             workspace: ssh-directory
+#         params:
+#           - name: depth
+#             value: "0"
+#           - name: url
+#             value: $(params.repo_url)
+#           - name: revision
+#             value: $(params.gitrevision)
+#       - name: helm-push
+#         taskRef:
+#           name: stakater-helm-push
+#           kind: Task
+#         workspaces:
+#           - name: source
+#             workspace: source
+#         params:
+#           - name: REGISTRY
+#             value: $(params.helm_registry)
+#           - name: CHART_PATH
+#             value: "helm/"
 
-      # - name: stakater-fetch-pr-number
-      #   runAfter:
-      #     - fetch-repository
-      #   taskRef:
-      #     name: stakater-fetch-pr-number
-      #     kind: Task
-      #   workspaces:
-      #     - name: source
-      #       workspace: source
-      #   params:
-      #     - name: provider
-      #       value: "bitbucket"
-      #     - name: username
-      #       value: "asfamumtaz"
-      #     - name: password
-      #       value: "ATBBsvFHFwZmFuEkCXYMp9eAczAh6FDF9827"
-      #     - name: hash
-      #       value: $(params.gitrevision)
-      #     - name: workspace
-      #       value: rabbitmqwebhook
-      #     - name: repository
-      #       value: rabbitmq-test
-      # - name: stakater-create-git-tag-0-0-3
-      #   runAfter:
-      #     - stakater-fetch-pr-number
-      #   taskRef:
-      #     name: stakater-create-git-tag-0.0.3
-      #     kind: ClusterTask
-      #   params:
-      #     - name: PR_NUMBER
-      #       value: $(tasks.stakater-fetch-pr-number.results.PR_NUMBER)
-      #     - name: GIT_REVISION
-      #       value: $(params.gitrevision)
-      #   workspaces:
-      #     - name: source
-      #       workspace: source
-      #     - name: ssh-directory
-      #       workspace: ssh-directory
-  workspaces:
-    - name: source
-      volumeClaimTemplate:
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-    - name: ssh-directory
-      secret:
-        secretName: rabbitmq-repo-ssh-creds
-    - name: basic-auth
-      secret:
-        secretName: git-auth
+#       # - name: stakater-fetch-pr-number
+#       #   runAfter:
+#       #     - fetch-repository
+#       #   taskRef:
+#       #     name: stakater-fetch-pr-number
+#       #     kind: Task
+#       #   workspaces:
+#       #     - name: source
+#       #       workspace: source
+#       #   params:
+#       #     - name: provider
+#       #       value: "bitbucket"
+#       #     - name: username
+#       #       value: "asfamumtaz"
+#       #     - name: password
+#       #       value: "ATBBsvFHFwZmFuEkCXYMp9eAczAh6FDF9827"
+#       #     - name: hash
+#       #       value: $(params.gitrevision)
+#       #     - name: workspace
+#       #       value: rabbitmqwebhook
+#       #     - name: repository
+#       #       value: rabbitmq-test
+#       # - name: stakater-create-git-tag-0-0-3
+#       #   runAfter:
+#       #     - stakater-fetch-pr-number
+#       #   taskRef:
+#       #     name: stakater-create-git-tag-0.0.3
+#       #     kind: ClusterTask
+#       #   params:
+#       #     - name: PR_NUMBER
+#       #       value: $(tasks.stakater-fetch-pr-number.results.PR_NUMBER)
+#       #     - name: GIT_REVISION
+#       #       value: $(params.gitrevision)
+#       #   workspaces:
+#       #     - name: source
+#       #       workspace: source
+#       #     - name: ssh-directory
+#       #       workspace: ssh-directory
+#   workspaces:
+#     - name: source
+#       volumeClaimTemplate:
+#         spec:
+#           accessModes:
+#             - ReadWriteOnce
+#           resources:
+#             requests:
+#               storage: 1Gi
+#     - name: ssh-directory
+#       secret:
+#         secretName: rabbitmq-repo-ssh-creds
+#     - name: basic-auth
+#       secret:
+#         secretName: git-auth
 
