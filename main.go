@@ -6,5 +6,5 @@ const unused = `unusedstr`
 
 func main() {
 	fmt.Println("Hello world")
-	foo = 02
+	foo = 02s
 }
