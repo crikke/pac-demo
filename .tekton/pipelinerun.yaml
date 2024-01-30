@@ -32,6 +32,8 @@ spec:
     - name: repo_url
     - name: revision
     - name: registry
+    - name: helm-creds-secret
+    - name: chart-path
   tasks:
     - name: fetch-repository
       taskRef:
@@ -77,9 +79,9 @@ spec:
           - name: REGISTRY
             value: $(params.registry)
           - name: HELM_REG_CREDS_SECRET_NAME
-            value: helm-reg-creds
+            value: $(params.helm-creds-secret)
           - name: CHART_PATH
-            value: /helm
+            value: $(params.chart-path)
   workspaces:
     - name: source
       volumeClaimTemplate:
