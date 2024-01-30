@@ -32,6 +32,10 @@ spec:
     - name: repo_url
     - name: revision
     - name: registry
+    - name: repo_url
+      value: "{{ repo_url }}"
+    - name: revision
+      value: "{{ revision }}"
   tasks:
     - name: fetch-repository
       taskRef:
@@ -68,6 +72,8 @@ spec:
       taskRef:
         name: stakater-helm-push
         kind: Task
+      runAfter:
+      - stakater-create-git-tag
       workspaces:
         - name: source
           workspace: source
