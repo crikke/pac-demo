@@ -99,7 +99,9 @@ spec:
           value: $(params.repo_url)
         - name: IMAGE_TAG
           value: $(tasks.stakater-create-git-tag.results.GIT_TAG)
-        
+      workspaces:
+        - name: source
+          workspace: source
   workspaces:
     - name: source
       volumeClaimTemplate:
