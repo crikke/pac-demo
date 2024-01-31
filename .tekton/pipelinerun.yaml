@@ -93,7 +93,7 @@ spec:
         name: stakater-push-main-tag-bitbucket
         kind: Task
       runAfter:
-      - stakater-helm-push
+      - helm-push
       params:
         - name: GIT_REVISION
           value: $(params.revision)
