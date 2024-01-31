@@ -44,8 +44,6 @@ spec:
       workspaces:
         - name: output
           workspace: source
-        # - name: basic-auth
-        #   workspace: basic-auth
       params:
         - name: url
           value: $(params.repo_url)
@@ -68,7 +66,7 @@ spec:
           workspace: source
         - name: ssh-directory
           workspace: ssh-directory
-    - name: helm-push
+    - name: stakater-helm-push
       taskRef:
         name: stakater-helm-push
         kind: Task
@@ -88,12 +86,12 @@ spec:
             value: $(params.insecure-upload)
           - name: SEM_VER
             value: $(tasks.stakater-create-git-tag.results.GIT_TAG)
-    - name: push-git-tag
+    - name: stakater-push-main-tag-bitbucket
       taskRef:
         name: stakater-push-main-tag-bitbucket
         kind: Task
       runAfter:
-      - helm-push
+      - stakater-helm-push
       params:
         - name: GIT_REVISION
           value: $(params.revision)
