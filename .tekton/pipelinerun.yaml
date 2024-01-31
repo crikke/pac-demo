@@ -18,7 +18,7 @@ metadata:
     # Use golangci-lint from the hub to test our Golang project
     pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/create-git-tag/0.0.12/task/stakater-create-git-tag/stakater-create-git-tag.yaml"
     # pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/0.0.15/task/stakater-helm-push/stakater-helm-push.yaml"
-    pipelinesascode.tekton.dev/task-3: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/0.0.17/task/stakater-helm-push/stakater-helm-push.yaml"
+    pipelinesascode.tekton.dev/task-3: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/feature/debug/task/stakater-helm-push/stakater-helm-push.yaml"
 
     # You can add more tasks by increasing the suffix number, you can specify
     # them as array to have multiple of them.
@@ -34,6 +34,7 @@ spec:
     - name: registry
     - name: helm-creds-secret
     - name: chart-path
+    - name: insecure-upload
   tasks:
     - name: fetch-repository
       taskRef:
@@ -82,6 +83,8 @@ spec:
             value: $(params.helm-creds-secret)
           - name: CHART_PATH
             value: $(params.chart-path)
+          - name: INSECURE_UPLOAD
+            value: $(params.insecure-upload)
   workspaces:
     - name: source
       volumeClaimTemplate:
