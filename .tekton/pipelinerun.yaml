@@ -87,7 +87,7 @@ spec:
           - name: INSECURE_UPLOAD
             value: $(params.insecure-upload)
           - name: SEM_VER
-            value: $(tasks.stakater-create-git-tag.results.GIT_TAG.path)
+            value: $(tasks.stakater-create-git-tag.results.GIT_TAG)
     - name: push-git-tag
       taskRef:
         name: stakater-push-main-tag-bitbucket
@@ -100,7 +100,7 @@ spec:
         - name: REPO_PATH
           value: $(params.repo_url)
         - name: IMAGE_TAG
-          value: $(tasks.stakater-create-git-tag.results.GIT_TAG.path)
+          value: $(tasks.stakater-create-git-tag.results.GIT_TAG)
         
   workspaces:
     - name: source
