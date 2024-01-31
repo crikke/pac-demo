@@ -117,4 +117,4 @@ spec:
     # checkout the private repositories
     # - name: basic-auth
     #   secret:
-    #     secretName: "{{ git_auth_secret }}"
+    #     secretName: "{{ git_authx_secret }}"
