@@ -45,6 +45,7 @@ spec:
         - name: output
           workspace: source
         - name: basic-auth
+          workspace: basic-auth
       params:
         - name: url
           value: $(params.repo_url)
@@ -104,9 +105,9 @@ spec:
         - name: source
           workspace: source
         - name: basic-auth
-          workspace: basic-auth-test
+          workspace: basic-auth
   workspaces:
-    - name: basic-auth-test
+    - name: basic-auth
       optional: true
     - name: source
       volumeClaimTemplate:
