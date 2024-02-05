@@ -5,13 +5,11 @@ metadata:
   name: pac-demo
   annotations:
     # The event we are targeting as seen from the webhook payload
-    # # this can be an array too, i.e: [pull_request, push]
-    # pipelinesascode.tekton.dev/on-event: "[push]"
+    # this can be an array too, i.e: [pull_request, push]
+    pipelinesascode.tekton.dev/on-event: "[push]"
 
-    # # The branch or tag we are targeting (ie: main, refs/tags/*)
-    # pipelinesascode.tekton.dev/on-target-branch: "[main]"
-    pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "push" && target_branch == "main" && target_branch == "refs/tags/*"
+    # The branch or tag we are targeting (ie: main, refs/tags/*)
+    pipelinesascode.tekton.dev/on-target-branch: "[main]"
 
     # Fetch the git-clone task from hub, we are able to reference later on it
     # with taskRef and it will automatically be embedded into our pipeline.
@@ -20,7 +18,8 @@ metadata:
     # Use golangci-lint from the hub to test our Golang project
     pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/create-git-tag/0.0.12/task/stakater-create-git-tag/stakater-create-git-tag.yaml"
     # pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/0.0.15/task/stakater-helm-push/stakater-helm-push.yaml"
-    pipelinesascode.tekton.dev/task-3: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/feature/debug/task/stakater-helm-push/stakater-helm-push.yaml"
+    pipelinesascode.tekton.dev/task-3: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/main/task/stakater-helm-push/stakater-helm-push.yaml"
+    pipelinesascode.tekton.dev/task-4: "https://raw.githubusercontent.com/stakater-tekton-catalog/push-main-tag-bitbucket/feature/test/task/stakater-push-main-tag-bitbucket/stakater-push-main-tag-bitbucket.yaml"
 
     # You can add more tasks by increasing the suffix number, you can specify
     # them as array to have multiple of them.
@@ -36,7 +35,8 @@ spec:
     - name: registry
     - name: helm-creds-secret
     - name: chart-path
-    - name: insecure-upload
+    - name: custom-ca-path
+      optional: true
   tasks:
     - name: fetch-repository
       taskRef:
@@ -85,10 +85,28 @@ spec:
             value: $(params.helm-creds-secret)
           - name: CHART_PATH
             value: $(params.chart-path)
-          - name: INSECURE_UPLOAD
-            value: $(params.insecure-upload)
+          - name: CUSTOM_CA_PATH
+            value: $(params.custom-ca-path)
           - name: SEM_VER
             value: $(tasks.stakater-create-git-tag.results.GIT_TAG)
+    - name: stakater-push-main-tag-bitbucket
+      taskRef:
+        name: stakater-push-main-tag-bitbucket
+        kind: Task
+      runAfter:
+      - stakater-helm-push
+      params:
+        - name: GIT_REVISION
+          value: $(params.revision)
+        - name: REPO_PATH
+          value: $(params.repo_url)
+        - name: IMAGE_TAG
+          value: $(tasks.stakater-create-git-tag.results.GIT_TAG)
+      workspaces:
+        - name: source
+          workspace: source
+        - name: basic-auth
+          workspace: basic-auth
   workspaces:
     - name: basic-auth
       optional: true
