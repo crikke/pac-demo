@@ -18,8 +18,8 @@ metadata:
     # Use golangci-lint from the hub to test our Golang project
     pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/create-git-tag/0.0.12/task/stakater-create-git-tag/stakater-create-git-tag.yaml"
     # pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/0.0.15/task/stakater-helm-push/stakater-helm-push.yaml"
-    pipelinesascode.tekton.dev/task-3: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/main/task/stakater-helm-push/stakater-helm-push.yaml"
-    pipelinesascode.tekton.dev/task-4: "https://raw.githubusercontent.com/stakater-tekton-catalog/push-main-tag-bitbucket/feature/test/task/stakater-push-main-tag-bitbucket/stakater-push-main-tag-bitbucket.yaml"
+    pipelinesascode.tekton.dev/task-3: "https://raw.githubusercontent.com/stakater-tekton-catalog/helm-push/feature/debug/task/stakater-helm-push/stakater-helm-push.yaml"
+    pipelinesascode.tekton.dev/task-4: "https://raw.githubusercontent.com/stakater-tekton-catalog/push-main-tag-bitbucket/feature/do-not-use-x-auth/task/stakater-push-main-tag-bitbucket/stakater-push-main-tag-bitbucket.yaml"
 
     # You can add more tasks by increasing the suffix number, you can specify
     # them as array to have multiple of them.
@@ -98,10 +98,12 @@ spec:
       params:
         - name: GIT_REVISION
           value: $(params.revision)
-        - name: REPO_PATH
+        - name: REPO_URL
           value: $(params.repo_url)
-        - name: IMAGE_TAG
+        - name: SEM_VER
           value: $(tasks.stakater-create-git-tag.results.GIT_TAG)
+        - name: CUSTOM_CA_CERT_PATH
+          value: $(params.custom-ca-path)
       workspaces:
         - name: source
           workspace: source
