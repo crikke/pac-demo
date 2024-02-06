@@ -37,6 +37,7 @@ spec:
     - name: chart-path
     - name: custom-ca-path
       optional: true
+    - name: git-auth-secret
   tasks:
     - name: fetch-repository
       taskRef:
@@ -104,6 +105,8 @@ spec:
           value: $(tasks.stakater-create-git-tag.results.GIT_TAG)
         - name: CUSTOM_CA_CERT_PATH
           value: $(params.custom-ca-path)
+        - name: BITBUCKET_TOKEN
+          value: $(params.git-auth-secret)
       workspaces:
         - name: source
           workspace: source
