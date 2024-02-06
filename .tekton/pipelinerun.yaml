@@ -48,6 +48,9 @@ spec:
           workspace: source
         - name: basic-auth
           workspace: basic-auth
+        - name: ssl-ca-directory
+          workspace: ssl-ca-directory
+          optional: true
       params:
         - name: url
           value: $(params.repo_url)
@@ -113,6 +116,7 @@ spec:
   workspaces:
     - name: basic-auth
       optional: true
+    - name: ssl-ca-directory
     - name: source
       volumeClaimTemplate:
         spec:
