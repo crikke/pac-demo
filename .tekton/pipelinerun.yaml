@@ -68,8 +68,6 @@ spec:
       runAfter:
         - fetch-repository
       params:
-        - name: url
-          value: $(params.repo_url)
         - name: GIT_REVISION
           value: $(params.revision)
           workspace: source
