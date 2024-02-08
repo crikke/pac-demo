@@ -64,6 +64,8 @@ spec:
       workspaces:
         - name: output
           workspace: source
+      runAfter:
+        - fetch-repository
       params:
         - name: url
           value: $(params.repo_url)
