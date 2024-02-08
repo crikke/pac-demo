@@ -35,7 +35,6 @@ spec:
     - name: revision
     - name: registry
     - name: helm-creds-secret
-    - name: chart-path
     - name: custom-ca-path
       optional: true
     - name: git-auth-secret
