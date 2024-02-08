@@ -3,7 +3,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: stakater-monorepo-get-changed-helm-charts
+  name: stakater-monorepo-package-helm-charts
   labels:
     app.kubernetes.io/version: "0.0.0"
 spec:
@@ -11,44 +11,100 @@ spec:
     - name: GIT_REVISION
       type: string
       description: The git revision
+    - name: BITBUCKET_TOKEN
+      type: string
+      default: "git-auth"
+      description: Secret that stores the Access Token and User Email for BitBucket
+    - name: REPO_URL
+      type: string
+      description: URL of the repository.
+    - name: CUSTOM_CA_CERT_PATH
+      type: string
+      default: ""
+    - name: REGISTRY
+      type: string
   steps:
     - args:
         - '-c'
         - >
           set -e
 
+          REPO_PATH=$(params.REPO_URL)
+
+          if [[ $(params.REPO_URL) == https://* ]]; then
+            REPO_PATH=${REPO_PATH#"https://"}
+          fi
+
+          if [[ $(params.REPO_URL) == http://* ]]; then
+            REPO_PATH=${REPO_PATH#"http://"}
+          fi
+          git config --global --add safe.directory $(workspaces.source.path)
+
+          if [[ $(params.CUSTOM_CA_CERT_PATH) != "" ]]; then
+            git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
+          fi
+          
+          git remote set-url origin "https://${GIT_USERNAME}:${ACCESS_TOKEN}@${REPO_PATH}"
+
+          git config user.email ${GIT_EMAIL}
+
           # start by getting every file that has changed checking if the uppermost directory contains a helmchart
-          git diff --name-only GIT_REVISION GIT_REVISION~1 | while read line 
+          git diff --name-only $(params.GIT_REVISION) $(params.GIT_REVISION)~1 | while read CHART
           do
-            # check if file is Chart.Yaml
+              # check if file is Chart.Yaml
+              if [ $(basename $CHART) == "Chart.yaml" ]; then
 
-            if [ test -f basename $line == "Chart.yaml" ]; do
-              echo $line >> updated-helmcharts.txt
+                  CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
+                  CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2 }')
 
-              CHART_NAME=$(cat $line | awk -F "name: " 'NF>1{print $2 }')
-              CHART_VERSION=$(cat $line | awk -F "version: " 'NF>1{print $2 }')
+                  CHART_TAG=$CHART_NAME-$CHART_VERSION
+                  CHART_DIR=$(dirname $CHART)
+                  echo $CHART_TAG;
+                  echo $CHART_DIR;
 
-              CHART_TAG=$CHART_NAME-$CHART_VERSION
 
-               # check if git tag exists for chart. Should be {Chart.name-chart.version}
-              if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
-                echo "tag $TAG already exist"
-              else
-                updated-helmcharts.txt << $line
+                  # check if git tag exists for chart. Should be {Chart.name-chart.version}
+                  if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
+                      echo "chart version $TAG already exist, wont push helmchart ";
+                      continue
+                  fi
+
+                  CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR | cut -d":" -f2 | tr -d '[:space:]')
+                  echo $CHART_PACKAGE
+
+                  if [ $(params.CUSTOM_CA_CERT_PATH) != "" ]; then
+                      curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH)
+                  else
+                      curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
+                  fi
+
+                  git tag -am "Bump version to $(CHART_TAG)" $(CHART_TAG)
+
               fi
-
-            fi 
 
           done
 
-          # remove duplicate entries
-          sort updated-helmcharts.txt | uniq > updated-helmcharts.txt 
+          git push --tags
 
-          
-          
 
       command:
         - /bin/bash
+      env:
+        - name: GIT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.BITBUCKET_TOKEN)
+              key: username
+        - name: ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.BITBUCKET_TOKEN)
+              key: token
+        - name: GIT_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.BITBUCKET_TOKEN)
+              key: email
       image: 'stakater/pipeline-toolbox:v0.0.36'
       name: push-main-tag
       resources: {}
