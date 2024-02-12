@@ -47,7 +47,7 @@ spec:
 
           git config user.email ${GIT_EMAIL}
 
-          git diff --name-only HEAD HEAD~1 | while read CHART;
+          git diff --name-only HEAD^ HEAD | while read CHART;
           do
               # check if file is Chart.Yaml
               echo $CHART;
