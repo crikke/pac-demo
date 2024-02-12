@@ -61,7 +61,7 @@ spec:
         name: stakater-monorepo-package-helm-charts
         kind: Task
       workspaces:
-        - name: output
+        - name: source
           workspace: source
       runAfter:
         - fetch-repository
