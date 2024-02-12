@@ -56,7 +56,7 @@ spec:
                   CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
                   CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2 }')
 
-                  CHART_TAG=$CHART_NAME-$CHART_VERSION
+                  CHART_TAG="$CHART_NAME-$CHART_VERSION"
                   CHART_DIR=$(dirname $CHART)
                   echo $CHART_TAG;
                   echo $CHART_DIR;
