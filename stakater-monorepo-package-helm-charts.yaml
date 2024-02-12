@@ -51,9 +51,9 @@ spec:
           git diff --name-only $(params.GIT_REVISION) $(params.GIT_REVISION)~1 | while read CHART
           do
               # check if file is Chart.Yaml
-              echo "1"
-
-              if [ $(basename $CHART) == "Chart.yaml" ]; then
+              echo $CHART
+              sleep 6000;
+              if [ $(basename "$CHART") == "Chart.yaml" ]; then
                   echo "2"
 
                   CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
