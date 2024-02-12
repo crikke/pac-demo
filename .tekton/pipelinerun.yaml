@@ -31,8 +31,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "2"
 spec:
   params:
-    - name: repo_url_clone
-    - name: repo_url_https
+    - name: ssh_repo_url
     - name: revision
     - name: registry
     - name: helm-creds-secret
@@ -51,10 +50,9 @@ spec:
           workspace: basic-auth
         - name: ssl-ca-directory
           workspace: ssl-ca-directory
-          optional: true
       params:
         - name: url
-          value: $(params.repo_url_clone)
+          value: $(params.ssh_repo_url)
         - name: revision
           value: $(params.revision)
           workspace: source
@@ -74,12 +72,13 @@ spec:
         - name: BITBUCKET_TOKEN
           value: $(params.git-auth-secret)
         - name: REPO_URL
-          value: $(params.repo_url_https)
+          value: $(params.ssh_repo_url)
         - name: REGISTRY
           value: $(params.registry)
         - name: CUSTOM_CA_CERT_PAT
           value: $(params.custom-ca-path)
-
+        - name: ssl-ca-directory
+          workspace: ssl-ca-directory
     # - name: stakater-create-git-tag
     #   runAfter:
     #     - fetch-repository
@@ -137,8 +136,6 @@ spec:
     #     - name: source
     #       workspace: source
   workspaces:
-    - name: basic-auth
-      optional: true
     - name: ssl-ca-directory
     - name: source
       volumeClaimTemplate:
