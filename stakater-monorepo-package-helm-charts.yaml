@@ -51,13 +51,23 @@ spec:
           git diff --name-only $(params.GIT_REVISION) $(params.GIT_REVISION)~1 | while read CHART
           do
               # check if file is Chart.Yaml
+              echo "1"
+
               if [ $(basename $CHART) == "Chart.yaml" ]; then
+                  echo "2"
 
                   CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
+                  echo "3"
+
                   CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2 }')
+                  echo "4"
 
                   CHART_TAG="$CHART_NAME-$CHART_VERSION"
+                  echo "5"
+                  
                   CHART_DIR=$(dirname $CHART)
+                  echo "6"
+
                   echo $CHART_TAG;
                   echo $CHART_DIR;
 
