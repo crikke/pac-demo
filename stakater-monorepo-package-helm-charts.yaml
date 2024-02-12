@@ -29,22 +29,22 @@ spec:
         - >
           set -e
 
+
+          if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
+            cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${PARAM_USER_HOME}"/.ssh
+            chmod 700 "${PARAM_USER_HOME}"/.ssh
+            chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+          fi
+
           REPO_PATH=$(params.REPO_URL)
-
-          if [[ $(params.REPO_URL) == https://* ]]; then
-            REPO_PATH=${REPO_PATH#"https://"}
-          fi
-
-          if [[ $(params.REPO_URL) == http://* ]]; then
-            REPO_PATH=${REPO_PATH#"http://"}
-          fi
+    
           git config --global --add safe.directory $(workspaces.source.path)
 
           if [[ $(params.CUSTOM_CA_CERT_PATH) != "" ]]; then
             git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
           
-          git remote set-url origin "https://${GIT_USERNAME}:${ACCESS_TOKEN}@${REPO_PATH}"
+          # git remote set-url origin "https://${GIT_USERNAME}:${ACCESS_TOKEN}@${REPO_PATH}"
 
           git config user.email ${GIT_EMAIL}
 
@@ -90,6 +90,10 @@ spec:
       command:
         - /bin/bash
       env:
+        - name: WORKSPACE_SSH_DIRECTORY_BOUND
+          value: $(workspaces.ssh-directory.bound)
+        - name: WORKSPACE_SSH_DIRECTORY_PATH
+          value: $(workspaces.ssh-directory.path)
         - name: GIT_USERNAME
           valueFrom:
             secretKeyRef:
