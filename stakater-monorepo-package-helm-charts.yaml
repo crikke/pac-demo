@@ -44,8 +44,7 @@ spec:
             git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
           
-          # git remote set-url origin "https://${GIT_USERNAME}:${ACCESS_TOKEN}@${REPO_PATH}"
-
+    
           git config user.email ${GIT_EMAIL}
 
           # start by getting every file that has changed checking if the uppermost directory contains a helmchart
