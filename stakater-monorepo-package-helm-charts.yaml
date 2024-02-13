@@ -40,7 +40,7 @@ spec:
 
           git config user.email ${GIT_EMAIL};
 
-          git show --name-only HEAD | while read CHART;
+          git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
           do
               # check if file is Chart.Yaml
               echo $CHART;
