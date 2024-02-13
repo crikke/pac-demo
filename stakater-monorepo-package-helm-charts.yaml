@@ -40,6 +40,8 @@ spec:
 
           git config user.email ${GIT_EMAIL};
 
+          sleep 7000;
+          
           git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
           do
               # check if file is Chart.Yaml
