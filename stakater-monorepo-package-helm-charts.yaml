@@ -45,6 +45,8 @@ spec:
           fi
           
 
+          sleep 7000;
+          
           git config user.email ${GIT_EMAIL}
 
           git diff --name-only HEAD^ HEAD | while read CHART;
