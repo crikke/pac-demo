@@ -38,6 +38,7 @@ spec:
     - name: custom-ca-path
       optional: true
     - name: git-auth-secret
+    - name: chart-path
   tasks:
     - name: fetch-repository
       taskRef:
@@ -77,8 +78,8 @@ spec:
           value: $(params.registry)
         - name: CUSTOM_CA_CERT_PAT
           value: $(params.custom-ca-path)
-        - name: ssl-ca-directory
-          workspace: ssl-ca-directory
+        - name: CHART_PATH
+          value: $(params.chart-path)
     # - name: stakater-create-git-tag
     #   runAfter:
     #     - fetch-repository
