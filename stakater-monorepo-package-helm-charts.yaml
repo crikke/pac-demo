@@ -71,7 +71,7 @@ spec:
             CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR | cut -d":" -f2 | tr -d '[:space:]')
             echo $CHART_PACKAGE
 
-            if [ $(params.CUSTOM_CA_CERT_PATH) != "" ]; then
+            if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
                 curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH)
             else
                 curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 

@@ -76,7 +76,7 @@ spec:
           value: $(params.ssh_repo_url)
         - name: REGISTRY
           value: $(params.registry)
-        - name: CUSTOM_CA_CERT_PAT
+        - name: CUSTOM_CA_CERT_PATH
           value: $(params.custom-ca-path)
         - name: CHART_DIR
           value: $(params.chart-path)
