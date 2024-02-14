@@ -77,7 +77,7 @@ spec:
                 curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
             fi
 
-            git tag -am "Bump version to $(CHART_TAG)" $(CHART_TAG);
+            git tag -am "Bump version to $CHART_TAG" $CHART_TAG;
 
           else
             echo "Chart.yaml not found in directory";
