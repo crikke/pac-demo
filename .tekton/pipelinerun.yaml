@@ -78,7 +78,7 @@ spec:
           value: $(params.registry)
         - name: CUSTOM_CA_CERT_PAT
           value: $(params.custom-ca-path)
-        - name: CHART_PATH
+        - name: CHART_DIR
           value: $(params.chart-path)
     # - name: stakater-create-git-tag
     #   runAfter:
