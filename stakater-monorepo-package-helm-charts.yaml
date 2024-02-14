@@ -44,10 +44,11 @@ spec:
           git config user.email ${GIT_EMAIL};
 
         
-          cd ./$(params.CHART_DIR);
           pwd;
 
-          if [ -f "./Chart.yaml" ]; then
+          CHART="./$(params.CHART_DIR)/Chart.yaml";
+          echo $CHART;
+          if [ -f $CHART ]; then
 
             CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
             echo $CHART_NAME
