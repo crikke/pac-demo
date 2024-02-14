@@ -45,8 +45,9 @@ spec:
 
         
           cd ./$(params.CHART_DIR);
+          pwd;
 
-          if [ -f "Chart.yaml" ]; then
+          if [ -f "./Chart.yaml" ]; then
 
             CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
             echo $CHART_NAME
@@ -75,8 +76,10 @@ spec:
                 curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
             fi
 
-            git tag -am "Bump version to $(CHART_TAG)" $(CHART_TAG)
+            git tag -am "Bump version to $(CHART_TAG)" $(CHART_TAG);
 
+          else
+            echo "Chart.yaml not found in directory";
           fi
 
 
