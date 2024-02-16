@@ -20,6 +20,9 @@ spec:
       default: ""
       type: string
       description: "Path to where Chart.yaml is located"
+    - name: HELM_REG_CREDS_SECRET_NAME
+      description: Helm registry credentials secret name
+      default: "helm-reg-creds"  
   steps:
     - args:
         - '-c'
@@ -78,9 +81,21 @@ spec:
 
 
           git push --tags
-
       command:
         - /bin/bash
+      env:
+        - name: REG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.HELM_REG_CREDS_SECRET_NAME)
+              key: password
+              optional: true
+        - name: REG_USER
+          valueFrom:
+            secretKeyRef:
+              name: $(params.HELM_REG_CREDS_SECRET_NAME)  
+              key: username
+              optional: true
       image: 'stakater/pipeline-toolbox:v0.0.36'
       name: push-main-tag
       resources: {}
