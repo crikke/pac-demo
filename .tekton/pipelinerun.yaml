@@ -24,6 +24,7 @@ spec:
     - name: custom-ca-path
       optional: true
     - name: chart-path
+    - name: helm-creds-secret
   tasks:
     - name: fetch-repository
       taskRef:
@@ -58,6 +59,8 @@ spec:
           value: $(params.custom-ca-path)
         - name: CHART_DIR
           value: $(params.chart-path)
+        - name: HELM_REG_CREDS_SECRET_NAME
+          value: $(params.helm-creds-secret)
   workspaces:
     - name: ssl-ca-directory
     - name: source
