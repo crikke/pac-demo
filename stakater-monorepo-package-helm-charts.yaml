@@ -8,16 +8,9 @@ metadata:
     app.kubernetes.io/version: "0.0.0"
 spec:
   params:
-    - name: GIT_REVISION
+    - name: GIT_EMAIL
       type: string
-      description: The git revision
-    - name: BITBUCKET_TOKEN
-      type: string
-      default: "git-auth"
-      description: Secret that stores the Access Token and User Email for BitBucket
-    - name: REPO_URL
-      type: string
-      description: URL of the repository.
+      default: "tekton@robot.com"
     - name: CUSTOM_CA_CERT_PATH
       type: string
       default: ""
@@ -41,7 +34,7 @@ spec:
           fi
           
 
-          git config user.email ${GIT_EMAIL};
+          git config user.email $(params.GIT_EMAIL);
 
         
           pwd;
@@ -86,25 +79,8 @@ spec:
 
           git push --tags
 
-
       command:
         - /bin/bash
-      env:
-        - name: GIT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: $(params.BITBUCKET_TOKEN)
-              key: username
-        - name: ACCESS_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.BITBUCKET_TOKEN)
-              key: token
-        - name: GIT_EMAIL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.BITBUCKET_TOKEN)
-              key: email
       image: 'stakater/pipeline-toolbox:v0.0.36'
       name: push-main-tag
       resources: {}
