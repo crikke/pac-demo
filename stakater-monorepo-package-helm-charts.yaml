@@ -47,7 +47,7 @@ spec:
           do
           
             echo $CHART;
-            if [ -f $CHART ]; then
+            if [ $(basename "$CHART") == "Chart.yaml" ]; then
 
               CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
               echo $CHART_NAME
@@ -81,7 +81,7 @@ spec:
             else
               echo "Chart.yaml not found in directory";
             fi
-            
+
           done
 
           git push --tags
