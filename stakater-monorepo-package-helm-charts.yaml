@@ -39,17 +39,17 @@ spec:
           pwd;
 
           git diff-tree --no-commit-id HEAD --name-only -r;
-          
+
           git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
           do
           
             echo $CHART;
             if [ $(basename "$CHART") == "Chart.yaml" ]; then
 
-              CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
+              CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2;exit; }')
               echo $CHART_NAME
 
-              CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2 }')
+              CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2;exit; }')
               echo $CHART_VERSION
 
               CHART_TAG="$CHART_NAME-$CHART_VERSION"
