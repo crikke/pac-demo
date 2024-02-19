@@ -43,6 +43,8 @@ spec:
         - name: revision
           value: $(params.revision)
           workspace: source
+        - depth:
+          value: 2
     - name: helm-package-and-push-charts
       taskRef:
         name: stakater-monorepo-package-helm-charts

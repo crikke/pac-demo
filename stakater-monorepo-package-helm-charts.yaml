@@ -42,43 +42,47 @@ spec:
         
           pwd;
 
-          CHART="./$(params.CHART_DIR)/Chart.yaml";
-          echo $CHART;
-          if [ -f $CHART ]; then
+          
+          git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
+          do
+          
+            echo $CHART;
+            if [ -f $CHART ]; then
 
-            CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
-            echo $CHART_NAME
+              CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2 }')
+              echo $CHART_NAME
 
-            CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2 }')
-            echo $CHART_VERSION
+              CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2 }')
+              echo $CHART_VERSION
 
-            CHART_TAG="$CHART_NAME-$CHART_VERSION"
-            echo $CHART_TAG
-            
-            CHART_DIR=$(dirname $CHART)
-            echo $CHART_DIR
+              CHART_TAG="$CHART_NAME-$CHART_VERSION"
+              echo $CHART_TAG
+              
+              CHART_DIR=$(dirname $CHART)
+              echo $CHART_DIR
 
-            # check if git tag exists for chart. Should be {Chart.name-chart.version}
-            if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
-                echo "chart version $TAG already exist, wont push helmchart ";
-                continue
-            fi
+              # check if git tag exists for chart. Should be {Chart.name-chart.version}
+              if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
+                  echo "chart version $TAG already exist, wont push helmchart ";
+                  continue
+              fi
 
-            CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR | cut -d":" -f2 | tr -d '[:space:]')
-            echo $CHART_PACKAGE
+              CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR | cut -d":" -f2 | tr -d '[:space:]')
+              echo $CHART_PACKAGE
 
-            if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
-                curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH)
+              if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
+                  curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH)
+              else
+                  curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
+              fi
+
+              git tag -am "Bump version to $CHART_TAG" $CHART_TAG;
+
             else
-                curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
+              echo "Chart.yaml not found in directory";
             fi
-
-            git tag -am "Bump version to $CHART_TAG" $CHART_TAG;
-
-          else
-            echo "Chart.yaml not found in directory";
-          fi
-
+            
+          done
 
           git push --tags
       command:
