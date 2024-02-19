@@ -16,10 +16,6 @@ spec:
       default: ""
     - name: REGISTRY
       type: string
-    - name: CHART_DIR
-      default: ""
-      type: string
-      description: "Path to where Chart.yaml is located"
     - name: HELM_REG_CREDS_SECRET_NAME
       description: Helm registry credentials secret name
       default: "helm-reg-creds"  
