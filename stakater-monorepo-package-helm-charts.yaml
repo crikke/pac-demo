@@ -38,6 +38,7 @@ spec:
         
           pwd;
 
+          git diff-tree --no-commit-id HEAD --name-only -r;
           
           git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
           do
