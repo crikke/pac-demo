@@ -23,7 +23,6 @@ spec:
     - name: registry
     - name: custom-ca-path
       optional: true
-    - name: chart-path
     - name: helm-creds-secret
   tasks:
     - name: fetch-repository
