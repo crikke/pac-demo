@@ -25,7 +25,7 @@ spec:
         - >
           set -e
 
-          PIPELINE_BOOKMARK_TAG="tekton-git-marker"
+          PIPELINE_BOOKMARK_TAG="tekton-git-marker";
           ln -s /tekton/creds/.ssh /root/.ssh;
           git config --global --add safe.directory $(workspaces.source.path);
 
@@ -92,7 +92,8 @@ spec:
 
             done
           fi
-          git push --tags
+
+          git push --tags;
       command:
         - /bin/bash
       env:
