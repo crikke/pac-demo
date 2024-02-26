@@ -91,6 +91,9 @@ spec:
               fi
 
             done
+          
+          else 
+            echo "$PIPELINE_BOOKMARK_TAG not found";
           fi
 
           git push --tags;
