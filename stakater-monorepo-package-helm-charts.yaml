@@ -65,7 +65,6 @@ spec:
                   continue
               fi
 
-              sleep 8000;
               CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR);
               echo $CHART_PACKAGE;
 
