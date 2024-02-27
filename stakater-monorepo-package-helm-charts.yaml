@@ -65,7 +65,7 @@ spec:
                   continue
               fi
 
-              CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR);
+              CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR);
 
               # if [ $? -ne 0 ]; then
                   # echo "Error occurred while packaging the Helm chart.";
