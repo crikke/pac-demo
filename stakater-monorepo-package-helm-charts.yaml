@@ -25,7 +25,6 @@ spec:
         - >
           set -e
 
-          PIPELINE_BOOKMARK_TAG="tekton-git-marker";
           ln -s /tekton/creds/.ssh /root/.ssh;
           git config --global --add safe.directory $(workspaces.source.path);
 
@@ -34,69 +33,65 @@ spec:
           fi
           
 
-          if [ $(git tag -l "$PIPELINE_BOOKMARK_TAG") ]; then
 
-            git config user.email $(params.GIT_EMAIL);
+          git config user.email $(params.GIT_EMAIL);
 
+        
+          pwd;
+
+          git diff-tree --no-commit-id HEAD --name-only -r;
+
+          git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
+          do
           
-            pwd;
+            echo $CHART;
+            if [ $(basename "$CHART") == "Chart.yaml" ]; then
 
+              CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2;exit; }')
+              echo $CHART_NAME
 
-            git diff HEAD..$PIPELINE_BOOKMARK_TAG --name-only -r | while read CHART;
-            do
-            
-              echo $CHART;
-              if [ $(basename "$CHART") == "Chart.yaml" ]; then
+              CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2;exit; }')
+              echo $CHART_VERSION
 
-                CHART_NAME=$(cat $CHART | awk -F "name: " 'NF>1{print $2;exit; }')
-                echo $CHART_NAME
+              CHART_TAG="$CHART_NAME-$CHART_VERSION"
+              echo $CHART_TAG
+              
+              CHART_DIR=$(dirname $CHART)
+              echo $CHART_DIR
 
-                CHART_VERSION=$(cat $CHART | awk -F "version: " 'NF>1{print $2;exit; }')
-                echo $CHART_VERSION
-
-                CHART_TAG="$CHART_NAME-$CHART_VERSION"
-                echo $CHART_TAG
-                
-                CHART_DIR=$(dirname $CHART)
-                echo $CHART_DIR
-
-                # check if git tag exists for chart. Should be {Chart.name-chart.version}
-                if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
-                    echo "chart version $TAG already exist, wont push helmchart ";
-                    continue
-                fi
-
-                CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR 2>&1)
-                if [ $? -ne 0 ]; then
-                    echo "Error occurred while packaging the Helm chart.";
-                    echo $?;
-                    echo $CHART_PACKAGE;
-                    continue;
-                fi
-
-                CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]')
-
-                echo $CHART_PACKAGE
-
-                if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
-                    curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH)
-                else
-                    curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
-                fi
-
-                git tag -am "Bump version to $CHART_TAG" $CHART_TAG;
-
-              else
-                echo "Chart.yaml not found in directory";
+              # check if git tag exists for chart. Should be {Chart.name-chart.version}
+              if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
+                  echo "chart version $TAG already exist, wont push helmchart ";
+                  continue
               fi
 
-            done
-          
-          else 
-            echo "$PIPELINE_BOOKMARK_TAG not found";
-          fi
+              CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR 2>&1)
+              if [ $? -ne 0 ]; then
+                  echo "Error occurred while packaging the Helm chart.";
+                  echo $?;
+                  echo $CHART_PACKAGE;
+                  continue;
+              fi
 
-          git push --tags;
+              CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]')
+
+              echo $CHART_PACKAGE
+
+              if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
+                  curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH)
+              else
+                  curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
+              fi
+
+              git tag -am "Bump version to $CHART_TAG" $CHART_TAG;
+
+            else
+              echo "Chart.yaml not found in directory";
+            fi
+
+          done
+
+          git push --tags
       command:
         - /bin/bash
       env:
