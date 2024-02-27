@@ -65,15 +65,15 @@ spec:
                   continue
               fi
 
-              CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR 2>&1)
+              CHART_PACKAGE=$(helm package --version $CHART_VERSION -u $CHART_DIR);
               echo $CHART_PACKAGE;
 
-              if [ $? -ne 0 ]; then
-                  echo "Error occurred while packaging the Helm chart.";
-                  echo $?;
-                  echo $CHART_PACKAGE;
-                  continue;
-              fi
+              # if [ $? -ne 0 ]; then
+                  # echo "Error occurred while packaging the Helm chart.";
+              echo $?;
+              echo $CHART_PACKAGE;
+              #     continue;
+              # fi
 
               CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]')
 
