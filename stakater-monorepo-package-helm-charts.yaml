@@ -80,9 +80,9 @@ spec:
 
               if [ $? -ne 0 ]; then
                 echo $GIT_RESULT >> error-list.txt;
-                echo "err: $GIT_RESULT";
-                continue;
               fi
+              
+              echo "err: $GIT_RESULT";
     
             fi
 
