@@ -23,7 +23,6 @@ spec:
     - args:
         - '-c'
         - >
-          set -e
 
           ln -s /tekton/creds/.ssh /root/.ssh;
           git config --global --add safe.directory $(workspaces.source.path);
