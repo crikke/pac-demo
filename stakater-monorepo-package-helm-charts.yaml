@@ -26,7 +26,6 @@ spec:
 
           ln -s /tekton/creds/.ssh /root/.ssh;
           git config --global --add safe.directory $(workspaces.source.path);
-          touch error-list;
 
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
             git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
@@ -51,9 +50,6 @@ spec:
               CHART_DIR=$(dirname $CHART)
               echo "chart dir: $CHART_DIR"
         
-              # check if git tag exists for chart. Should be {Chart.name-chart.version}
-              # TODO: This seems to not work properly.
-              
               if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
                   echo "chart version $TAG already exist, wont push helmchart ";
                   continue
@@ -75,16 +71,16 @@ spec:
                   curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
               fi
 
-              sleep 7000;
-              
               GIT_RESULT=$(git tag -am "Bump version to $CHART_TAG" "$CHART_TAG" 2>&1);
 
               
               if [ $? -ne 0 ]; then
                 echo $GIT_RESULT >> error-list.txt;
+                echo "err: $GIT_RESULT";
+              else
+                echo "$CHART_NAME done uploading";
               fi
               
-              echo "err: $GIT_RESULT";
     
             fi
 
@@ -93,8 +89,11 @@ spec:
           git push --tags;
           
           echo "done uploading charts to nexus.";
-          cat error-list.txt;
-
+          
+          if [ -s error-list.txt]; then
+            echo "errors occured when processing some charts";
+            cat error-list.txt;
+          fi
 
       command:
         - /bin/bash
