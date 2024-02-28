@@ -78,7 +78,7 @@ spec:
 
               GIT_RESULT=$(git tag -am "Bump version to $CHART_TAG" $CHART_TAG);
 
-              if [ $? -ne 0 ] then;
+              if [ $? -ne 0 ]; then
                 echo $GIT_RESULT >> error-list;
                 continue;
               fi
@@ -89,7 +89,7 @@ spec:
 
           git push --tags;
           
-          if ![ -s error-list ] then;
+          if ![ -s error-list ]; then
             cat error-list;
             exit 1;
           fi
