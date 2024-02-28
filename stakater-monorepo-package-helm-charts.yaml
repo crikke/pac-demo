@@ -53,6 +53,8 @@ spec:
               echo "chart dir: $CHART_DIR"
         
               # check if git tag exists for chart. Should be {Chart.name-chart.version}
+              # TODO: This seems to not work properly.
+              
               if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
                   echo "chart version $TAG already exist, wont push helmchart ";
                   continue
@@ -74,7 +76,12 @@ spec:
                   curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
               fi
 
-              git tag -am "Bump version to $CHART_TAG" $CHART_TAG;
+              GIT_RESULT=$(git tag -am "Bump version to $CHART_TAG" $CHART_TAG);
+
+              if [ $? -ne 0 ] then;
+                echo $GIT_RESULT >> error-list;
+                continue;
+              fi
     
             fi
 
