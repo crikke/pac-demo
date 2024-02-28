@@ -66,21 +66,24 @@ spec:
               echo "uploading $CHART_PACKAGE."
 
               if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
-                  curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH)
+                  RESULT=$(curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH))
               else
-                  curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 
+                  RESULT=$(curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE")
               fi
 
-              GIT_RESULT=$(git tag -am "Bump version to $CHART_TAG" "$CHART_TAG" 2>&1);
+              if [ $? -ne 0 ]; then
+                echo $RESULT >> error-list.txt;
+                continue;
+              fi
 
+              RESULT=$(git tag -am "Bump version to $CHART_TAG" "$CHART_TAG" 2>&1);
               
               if [ $? -ne 0 ]; then
-                echo $GIT_RESULT >> error-list.txt;
-                echo "err: $GIT_RESULT";
-              else
-                echo "$CHART_NAME done uploading";
+                echo $RESULT >> error-list.txt;
+                continue;
               fi
               
+              echo "$CHART_NAME done uploading";
     
             fi
 
