@@ -27,56 +27,46 @@ spec:
 
           ln -s /tekton/creds/.ssh /root/.ssh;
           git config --global --add safe.directory $(workspaces.source.path);
+          touch error-list;
 
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
             git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
           
-
-
           git config user.email $(params.GIT_EMAIL);
-
-        
-          pwd;
-
-          git diff-tree --no-commit-id HEAD --name-only -r;
 
           git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
           do
           
-            echo $CHART;
             if [ $(basename "$CHART") == "Chart.yaml" ]; then
 
               CHART_NAME=$(cat $CHART | awk -F "^name: " 'NF>1{print $2;exit; }')
-              echo $CHART_NAME
+              echo "chart name: $CHART_NAME"
 
               CHART_VERSION=$(cat $CHART | awk -F "^version: " 'NF>1{print $2;exit; }')
-              echo $CHART_VERSION
+              echo "chart version: $CHART_VERSION"
 
               CHART_TAG="$CHART_NAME-$CHART_VERSION"
-              echo $CHART_TAG
+              echo "chart tag: $CHART_TAG"
               
               CHART_DIR=$(dirname $CHART)
-              echo $CHART_DIR
-
+              echo "chart dir: $CHART_DIR"
+        
               # check if git tag exists for chart. Should be {Chart.name-chart.version}
               if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
                   echo "chart version $TAG already exist, wont push helmchart ";
                   continue
               fi
 
-              CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR);
-
-              # if [ $? -ne 0 ]; then
-                  # echo "Error occurred while packaging the Helm chart.";
-              echo $?;
-              echo $CHART_PACKAGE;
-              #     continue;
-              # fi
+              CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR 2>&1);
+              if [ $? -ne 0 ]; then
+                  echo $CHART_PACKAGE >> error-list;
+                  continue;
+              fi
 
               CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]')
 
-              echo $CHART_PACKAGE
+              echo "uploading $CHART_PACKAGE."
 
               if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
                   curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH)
@@ -85,14 +75,18 @@ spec:
               fi
 
               git tag -am "Bump version to $CHART_TAG" $CHART_TAG;
-
-            else
-              echo "Chart.yaml not found in directory";
+    
             fi
 
           done
 
-          git push --tags
+          git push --tags;
+          
+          if ![ -s error-list ] then;
+            cat error-list;
+            exit 1;
+          fi
+
       command:
         - /bin/bash
       env:
