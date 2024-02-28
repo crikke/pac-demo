@@ -80,6 +80,7 @@ spec:
 
               if [ $? -ne 0 ]; then
                 echo $GIT_RESULT >> error-list;
+                echo "err: $GIT_RESULT";
                 continue;
               fi
     
@@ -89,7 +90,8 @@ spec:
 
           git push --tags;
           
-          if ![ -s error-list ]; then
+          if [ -s "error-list" ]; then
+            echo "error";
             cat error-list;
             exit 1;
           fi
