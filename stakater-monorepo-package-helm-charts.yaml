@@ -23,7 +23,6 @@ spec:
     - args:
         - '-c'
         - >
-
           ln -s /tekton/creds/.ssh /root/.ssh;
           git config --global --add safe.directory $(workspaces.source.path);
 
@@ -96,6 +95,7 @@ spec:
           if [ -s error-list.txt]; then
             echo "errors occured when processing some charts";
             cat error-list.txt;
+            exit 1;
           fi
 
       command:
