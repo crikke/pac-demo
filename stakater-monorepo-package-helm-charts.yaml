@@ -92,7 +92,7 @@ spec:
           
           echo "done uploading charts to nexus.";
           
-          if [ -s error-list.txt]; then
+          if [ -s error-list.txt ]; then
             echo "errors occured when processing some charts";
             cat error-list.txt;
             exit 1;
