@@ -13,7 +13,7 @@ metadata:
 
     # Fetch the git-clone task from hub, we are able to reference later on it
     # with taskRef and it will automatically be embedded into our pipeline.
-    pipelinesascode.tekton.dev/task-1: "https://raw.githubusercontent.com/crikke/pac-demo/main/git-clone.yaml"
+    pipelinesascode.tekton.dev/task-1: "https://raw.githubusercontent.com/crikke/pac-demo/main/git-clone-copy.yaml"
     pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/crikke/pac-demo/main/stakater-monorepo-package-helm-charts.yaml"
     pipelinesascode.tekton.dev/max-keep-runs: "2"
 spec:
