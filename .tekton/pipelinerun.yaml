@@ -34,6 +34,8 @@ spec:
           workspace: source
         - name: basic-auth
           workspace: basic-auth
+        - name: ssh-directory
+          workspace: ssh-directory
         - name: ssl-ca-directory
           workspace: ssl-ca-directory
       params:
@@ -63,6 +65,7 @@ spec:
           value: $(params.helm-creds-secret)
   workspaces:
     - name: ssl-ca-directory
+    - name: ssh-directory
     - name: source
       volumeClaimTemplate:
         spec:
