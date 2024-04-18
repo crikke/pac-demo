@@ -34,8 +34,6 @@ spec:
           workspace: source
         - name: basic-auth
           workspace: basic-auth
-        - name: ssh-directory
-          workspace: ssh-directory
         - name: ssl-ca-directory
           workspace: ssl-ca-directory
       params:
