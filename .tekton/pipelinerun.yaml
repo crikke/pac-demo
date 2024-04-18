@@ -66,6 +66,7 @@ spec:
   workspaces:
     - name: ssl-ca-directory
     - name: ssh-directory
+      workspace: ssh-directory
     - name: source
       volumeClaimTemplate:
         spec:
