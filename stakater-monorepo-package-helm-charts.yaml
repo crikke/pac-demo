@@ -23,9 +23,12 @@ spec:
     - args:
         - '-c'
         - >
+          whoami;
+          pwd;
+          
           ln -s /tekton/creds/.ssh /root/.ssh;
           git config --global --add safe.directory $(workspaces.source.path);
-
+          
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
             git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
