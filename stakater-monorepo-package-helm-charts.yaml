@@ -68,9 +68,9 @@ spec:
               echo "uploading $CHART_PACKAGE."
 
               if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
-                  RESULT=$(curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH) 2>$1)
+                  RESULT=$(curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH) 2>&1)
               else
-                  RESULT=$(curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 2>$1)
+                  RESULT=$(curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 2>&1)
               fi
 
               if [ $? -ne 0 ]; then
