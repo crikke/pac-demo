@@ -23,10 +23,9 @@ spec:
     - args:
         - '-c'
         - >
-          whoami;
           pwd;
           
-          git config --global --add safe.directory "*";
+          git config --global --add safe.directory *;
           git config --global --add user.email "tekton@csn.se";
           git config --global --add user.name "tekton";
 
