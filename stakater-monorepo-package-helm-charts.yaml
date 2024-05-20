@@ -10,7 +10,7 @@ spec:
   params:
     - name: GIT_EMAIL
       type: string
-      default: "tekton@robot.com"
+      default: "tekton@csn.com"
     - name: CUSTOM_CA_CERT_PATH
       type: string
       default: ""
@@ -27,7 +27,10 @@ spec:
           pwd;
           
           git config --global --add safe.directory $(workspaces.source.path);
-          
+          git config --global user.email "tekton@csn.se"
+          git config --global user.name "tekton"
+
+         
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
             git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
@@ -123,3 +126,4 @@ spec:
     - name: source
     - name: ssh-directory
       optional: true
+    - name: basic-auth
