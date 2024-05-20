@@ -25,11 +25,6 @@ spec:
         - >
           pwd;
           
-          git config --global --add safe.directory /workspace/source;
-
-          git config --global --add user.email "tekton@csn.se";
-          
-          git config --global --add user.name "tekton";
 
           if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
             cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials"
@@ -37,7 +32,12 @@ spec:
             chmod 400 "${HOME}/.git-credentials"
             chmod 400 "${HOME}/.gitconfig"
           fi
-         
+        
+          git config --global --add safe.directory /workspace/source;
+          git config --global --add user.email "tekton@csn.se";
+          git config --global --add user.name "tekton";
+
+
           echo "custom ca cert";
 
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
