@@ -37,6 +37,8 @@ spec:
             chmod 400 "${HOME}/.gitconfig"
           fi
          
+          echo "custom ca cert";
+
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
             git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
