@@ -37,9 +37,6 @@ spec:
           git config --global --add user.email "tekton@csn.se";
           git config --global --add user.name "tekton";
 
-
-          echo "custom ca cert";
-
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
             git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
@@ -104,7 +101,6 @@ spec:
           git push --tags;
           
           echo "done uploading charts to nexus.";
-          sleep 7000;
           
           if [ -s error-list.txt ]; then
             echo "errors occured when processing some charts";
