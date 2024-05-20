@@ -110,7 +110,9 @@ spec:
             cat error-list.txt;
             exit 1;
           fi
-
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
       command:
         - /bin/bash
       env:
