@@ -25,8 +25,10 @@ spec:
         - >
           pwd;
           
-          git config --global --add safe.directory '*';
+          git config --global --add safe.directory /workspace/source;
+
           git config --global --add user.email "tekton@csn.se";
+          
           git config --global --add user.name "tekton";
 
           if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
