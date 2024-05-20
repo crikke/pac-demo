@@ -26,7 +26,6 @@ spec:
           whoami;
           pwd;
           
-          git config --global --add safe.directory $(workspaces.source.path);
           git config --global --add user.email "tekton@csn.se";
           git config --global --add user.name "tekton";
 
