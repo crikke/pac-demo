@@ -26,14 +26,13 @@ spec:
           whoami;
           pwd;
           
-          ln -s /tekton/creds/.ssh /root/.ssh;
           git config --global --add safe.directory $(workspaces.source.path);
           
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
             git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
           
-          git config user.email $(params.GIT_EMAIL);
+          sleep 7000;
 
           git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
           do
