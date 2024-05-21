@@ -27,7 +27,7 @@ spec:
           workspace: ssl-ca-directory
       params:
         - name: url
-          value: $(params.ssh_repo_url)
+          value: $(params.repo_url)
         - name: revision
           value: $(params.revision)
           workspace: source
