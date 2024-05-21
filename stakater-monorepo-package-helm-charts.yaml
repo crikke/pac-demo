@@ -8,9 +8,6 @@ metadata:
     app.kubernetes.io/version: "0.0.0"
 spec:
   params:
-    - name: GIT_EMAIL
-      type: string
-      default: "tekton@csn.com"
     - name: CUSTOM_CA_CERT_PATH
       type: string
       default: ""
@@ -23,9 +20,6 @@ spec:
     - args:
         - '-c'
         - >
-          pwd;
-          
-
           if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
             cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials"
             cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig"
