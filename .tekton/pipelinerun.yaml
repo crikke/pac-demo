@@ -7,7 +7,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "2"
 spec:
   params:
-    - name: repo_url
+    - name: ssh_repo_url
     - name: revision
     - name: registry
     - name: custom-ca-path
@@ -27,7 +27,7 @@ spec:
           workspace: ssl-ca-directory
       params:
         - name: url
-          value: $(params.repo_url)
+          value: $(params.ssh_repo_url)
         - name: revision
           value: $(params.revision)
           workspace: source
@@ -41,6 +41,8 @@ spec:
       workspaces:
         - name: source
           workspace: source
+        - name: basic-auth
+          workspace: basic-auth
       runAfter:
         - fetch-repository
       params:
