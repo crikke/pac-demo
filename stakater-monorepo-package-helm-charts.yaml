@@ -8,9 +8,6 @@ metadata:
     app.kubernetes.io/version: "0.0.0"
 spec:
   params:
-    - name: GIT_EMAIL
-      type: string
-      default: "tekton@robot.com"
     - name: CUSTOM_CA_CERT_PATH
       type: string
       default: ""
@@ -23,17 +20,21 @@ spec:
     - args:
         - '-c'
         - >
-          whoami;
-          pwd;
-          
-          ln -s /tekton/creds/.ssh /root/.ssh;
-          git config --global --add safe.directory $(workspaces.source.path);
-          
+          if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
+            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials"
+            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig"
+            chmod 400 "${HOME}/.git-credentials"
+            chmod 400 "${HOME}/.gitconfig"
+          fi
+        
+          git config --global --add safe.directory /workspace/source;
+          git config --global --add user.email "tekton@csn.se";
+          git config --global --add user.name "tekton";
+
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
-            git config http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
+            git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
           
-          git config user.email $(params.GIT_EMAIL);
 
           git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
           do
@@ -100,10 +101,16 @@ spec:
             cat error-list.txt;
             exit 1;
           fi
-
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
       command:
         - /bin/bash
       env:
+        - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
+          value: $(workspaces.basic-auth.bound)
+        - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
+          value: $(workspaces.basic-auth.path)
         - name: REG_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -124,3 +131,4 @@ spec:
     - name: source
     - name: ssh-directory
       optional: true
+    - name: basic-auth

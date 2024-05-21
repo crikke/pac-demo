@@ -4,21 +4,10 @@ kind: Pipeline
 metadata:
   name: pipeline-helm-package-and-upload-to-nexus
   annotations:
-    # The event we are targeting as seen from the webhook payload
-    # this can be an array too, i.e: [pull_request, push]
-    pipelinesascode.tekton.dev/on-event: "[push]"
-
-    # The branch or tag we are targeting (ie: main, refs/tags/*)
-    pipelinesascode.tekton.dev/on-target-branch: "[main]"
-
-    # Fetch the git-clone task from hub, we are able to reference later on it
-    # with taskRef and it will automatically be embedded into our pipeline.
-    pipelinesascode.tekton.dev/task-1: "https://raw.githubusercontent.com/crikke/pac-demo/main/git-clone-copy.yaml"
-    pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/crikke/pac-demo/main/stakater-monorepo-package-helm-charts.yaml"
     pipelinesascode.tekton.dev/max-keep-runs: "2"
 spec:
   params:
-    - name: ssh_repo_url
+    - name: repo_url
     - name: revision
     - name: registry
     - name: custom-ca-path
@@ -38,7 +27,7 @@ spec:
           workspace: ssl-ca-directory
       params:
         - name: url
-          value: $(params.ssh_repo_url)
+          value: $(params.repo_url)
         - name: revision
           value: $(params.revision)
           workspace: source
