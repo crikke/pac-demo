@@ -7,7 +7,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "2"
 spec:
   params:
-    - name: ssh_repo_url
+    - name: repo_url
     - name: revision
     - name: registry
     - name: custom-ca-path
