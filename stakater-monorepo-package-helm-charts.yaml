@@ -17,7 +17,7 @@ spec:
       description: Helm registry credentials secret name
       default: "helm-reg-creds"  
   steps:
-    - name: "config git auth"
+    - name: "config-git-auth"
       args:
         - '-c'
         - >
@@ -49,7 +49,7 @@ spec:
       image: 'stakater/pipeline-toolbox:v0.0.36'
       resources: {}
       workingDir: $(workspaces.source.path)
-    - name: "helm package"
+    - name: "helm-package"
       image: 'stakater/pipeline-toolbox:v0.0.36'
       resources: {}
       workingDir: $(workspaces.source.path)
@@ -93,7 +93,7 @@ spec:
               fi
 
             done
-    - name: "upload helmcharts to nexus"
+    - name: "upload-helmcharts-to-nexus"
       image: 'stakater/pipeline-toolbox:v0.0.36'
       resources: {}
       workingDir: $(workspaces.source.path)
