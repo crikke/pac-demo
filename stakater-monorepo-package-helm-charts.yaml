@@ -83,8 +83,8 @@ spec:
           
                 CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR 2>&1);
                 if [ $? -ne 0 ]; then
-                    echo $CHART_PACKAGE >> error-list.txt;
-                    continue;
+                    echo $CHART_PACKAGE;
+                    exit 1;
                 fi
 
                 CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]');
