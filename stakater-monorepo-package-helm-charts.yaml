@@ -54,9 +54,12 @@ spec:
 
             LAST_SUCCESSFUL_BUILD="pipeline-last-successful-build";
 
+            
             if ! [ git rev-parse ${LAST_SUCCESSFUL_BUILD} >/dev/null 2>&1 ]; then
               LAST_SUCCESSFUL_BUILD=$(git rev-list --parents HEAD --max-parents=0);
             fi
+
+            echo $LAST_SUCCESSFUL_BUILD;
 
             git diff-tree --no-commit-id ${LAST_SUCCESSFUL_BUILD} --name-only -r | while read CHART;
             do
@@ -67,7 +70,7 @@ spec:
                 CHART_VERSION=$(cat $CHART | awk -F "^version: " 'NF>1{print $2;exit; }')
                 CHART_TAG="$CHART_NAME-$CHART_VERSION"
                 CHART_DIR=$(dirname $CHART)
-
+                echo $CHART_DIR;
 
                 CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR 2>&1);
                 if [ $? -ne 0 ]; then
