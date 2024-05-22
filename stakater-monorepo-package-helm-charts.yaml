@@ -67,7 +67,7 @@ spec:
 
             LAST_SUCCESSFUL_BUILD="pipeline-last-successful-build";
 
-            if ! [[ git rev-parse ${LAST_SUCCESSFUL_BUILD} >/dev/null 2>&1 ]]; then
+            if ! [ git rev-parse ${LAST_SUCCESSFUL_BUILD} >/dev/null 2>&1 ]; then
               LAST_SUCCESSFUL_BUILD=$(git rev-list --parents HEAD --max-parents=0);
             fi
 
