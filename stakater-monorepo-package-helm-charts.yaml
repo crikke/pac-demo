@@ -166,8 +166,8 @@ spec:
               git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH);
             fi
 
-            git tag --force pipeline-last-successful-build $(params.revision)
-            git push --force --tags
+            git tag --force pipeline-last-successful-build;
+            git push --force --tags;
   volumes:
     - name: charts
       emptyDir: {}
