@@ -52,7 +52,7 @@ spec:
 
             if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
               git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
-            fi b
+            fi
 
             LAST_SUCCESSFUL_BUILD="pipeline-last-successful-build";
 
