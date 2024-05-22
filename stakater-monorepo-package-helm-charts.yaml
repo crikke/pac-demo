@@ -52,7 +52,7 @@ spec:
 
             if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
               git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
-            fi
+            fi b
 
             LAST_SUCCESSFUL_BUILD="pipeline-last-successful-build";
 
@@ -63,7 +63,7 @@ spec:
 
             echo $LAST_SUCCESSFUL_BUILD;
 
-            git diff --no-commit-id ${LAST_SUCCESSFUL_BUILD}..${params.revision} --name-only -r | while read CHART;
+            git diff --no-commit-id $LAST_SUCCESSFUL_BUILD..$(params.revision) --name-only -r | while read CHART;
             do
             
               if [ $(basename "$CHART") == "Chart.yaml" ]; then
