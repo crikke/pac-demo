@@ -40,10 +40,10 @@ spec:
         - '-c'
         - >
             if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials"
-              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig"
-              chmod 400 "${HOME}/.git-credentials"
-              chmod 400 "${HOME}/.gitconfig"
+              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials";
+              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig";
+              chmod 400 "${HOME}/.git-credentials";
+              chmod 400 "${HOME}/.gitconfig";
             fi
           
             git config --global --add safe.directory /workspace/source;
@@ -51,12 +51,11 @@ spec:
             git config --global --add user.name "tekton";
 
             if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
-              git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
+              git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH);
             fi
 
             LAST_SUCCESSFUL_BUILD="pipeline-last-successful-build";
 
-            
             if ! [ git rev-parse ${LAST_SUCCESSFUL_BUILD} >/dev/null 2>&1 ]; then
               LAST_SUCCESSFUL_BUILD=$(git rev-list --parents HEAD --max-parents=0);
             fi
@@ -68,11 +67,16 @@ spec:
             
               if [ $(basename "$CHART") == "Chart.yaml" ]; then
 
-                CHART_NAME=$(cat $CHART | awk -F "^name: " 'NF>1{print $2;exit; }')
-                CHART_VERSION=$(cat $CHART | awk -F "^version: " 'NF>1{print $2;exit; }')
-                CHART_TAG="$CHART_NAME-$CHART_VERSION"
-                CHART_DIR=$(dirname $CHART)
-                echo $CHART_DIR;
+                # check if file exists, easier doing it like this rather than git diff --diff-filter
+                # This could happen if the Chart has been removed, renamed, etc.
+                if ! [ -f "$CHART" ]; then
+                  continue;
+                fi
+
+                CHART_NAME=$(cat $CHART | awk -F "^name: " 'NF>1{print $2;exit; }');
+                CHART_VERSION=$(cat $CHART | awk -F "^version: " 'NF>1{print $2;exit; }');
+                CHART_TAG="$CHART_NAME-$CHART_VERSION";
+                CHART_DIR=$(dirname $CHART);
 
                 CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR 2>&1);
                 if [ $? -ne 0 ]; then
@@ -80,20 +84,15 @@ spec:
                     exit 1;
                 fi
 
-
-                echo $CHART_PACKAGE;
                 CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]');
-                echo $CHART_PACKAGE;
-
                 
-                pwd;
                 mv $CHART_PACKAGE /tmp/charts;
               fi
 
             done
 
             ls -la /tmp/charts
-
+            
     - name: "upload-helmcharts-to-nexus"
       image: 'stakater/pipeline-toolbox:v0.0.36'
       resources: {}
@@ -126,9 +125,9 @@ spec:
 
               echo $CHART;
               if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
-                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH) -w %{http_code} 2> /dev/null |tail -n 1)
+                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART" --cacert $(params.CUSTOM_CA_CERT_PATH) -w %{http_code} 2> /dev/null |tail -n 1)
               else
-                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" -w %{http_code} 2> /dev/null |tail -n 1)
+                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART" -w %{http_code} 2> /dev/null |tail -n 1)
               fi
             
               if [ $RESULT -ne 200 ]; then
@@ -136,6 +135,42 @@ spec:
                 exit 1;
               fi
             done
+    - name: "update-build-tag"
+      image: 'stakater/pipeline-toolbox:v0.0.36'
+      resources: {}
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      command:
+        - /bin/bash
+      env:
+        - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
+          value: $(workspaces.basic-auth.bound)
+        - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
+          value: $(workspaces.basic-auth.path)
+      args:
+        - '-c'
+        - >
+            if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
+              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials";
+              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig";
+              chmod 400 "${HOME}/.git-credentials";
+              chmod 400 "${HOME}/.gitconfig";
+            fi
+          
+            git config --global --add safe.directory /workspace/source;
+            git config --global --add user.email "tekton@csn.se";
+            git config --global --add user.name "tekton";
+
+            if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
+              git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH);
+            fi
+
+           
+
+            git tag --force pipeline-last-successful-build $(params.revision)
+            git push --force --tags
   volumes:
     - name: charts
       emptyDir: {}
