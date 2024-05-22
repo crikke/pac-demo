@@ -103,7 +103,7 @@ spec:
       command:
         - /bin/bash
       volumeMounts:
-        - mountPath: /tmp/charts
+        - mountPath: /tmp/charts  
           name: charts
       env:
         - name: REG_PASSWORD
@@ -119,8 +119,7 @@ spec:
       args:
         - '-c'
         - >
-            ls -la /tmp/charts;
-            for CHART in /tmp/charts;
+            for CHART in /tmp/charts/*;
             do
 
               echo $CHART;
@@ -166,8 +165,6 @@ spec:
             if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
               git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH);
             fi
-
-           
 
             git tag --force pipeline-last-successful-build $(params.revision)
             git push --force --tags
