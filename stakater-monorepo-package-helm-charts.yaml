@@ -67,19 +67,28 @@ spec:
                 CHART_VERSION=$(cat $CHART | awk -F "^version: " 'NF>1{print $2;exit; }')
                 CHART_TAG="$CHART_NAME-$CHART_VERSION"
                 CHART_DIR=$(dirname $CHART)
-          
+
+
                 CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR 2>&1);
                 if [ $? -ne 0 ]; then
                     echo $CHART_PACKAGE;
                     exit 1;
                 fi
 
+
+                echo $CHART_PACKAGE;
                 CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]');
+                echo $CHART_PACKAGE;
+
                 
-                mv $CHART_PACKAGE /tmp/charts
+                pwd;
+                mv $CHART_PACKAGE /tmp/charts;
               fi
 
             done
+
+            ls -la /tmp/charts
+
     - name: "upload-helmcharts-to-nexus"
       image: 'stakater/pipeline-toolbox:v0.0.36'
       resources: {}
@@ -106,8 +115,11 @@ spec:
       args:
         - '-c'
         - >
+            ls -la /tmp/charts
             for CHART in /tmp/charts;
             do
+
+              echo $CHART;
               if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
                   RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH) -w %{http_code} 2> /dev/null |tail -n 1)
               else
