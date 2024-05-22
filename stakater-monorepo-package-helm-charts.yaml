@@ -54,6 +54,10 @@ spec:
               git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH);
             fi
 
+            # create results.txt so the next step dont fail if no charts have been built. Edge case
+            touch /tmp/charts/results.txt;
+
+
             LAST_SUCCESSFUL_BUILD="pipeline-last-successful-build";
 
             if ! [ git rev-parse ${LAST_SUCCESSFUL_BUILD} >/dev/null 2>&1 ]; then
@@ -78,6 +82,12 @@ spec:
                 CHART_TAG="$CHART_NAME-$CHART_VERSION";
                 CHART_DIR=$(dirname $CHART);
 
+                # instead of continuing here, exit early. 
+                if [ git rev-parse ${CHART_TAG} >/dev/null 2>&1 ]; then
+                    echo "chart version $TAG already exist";
+                    exit 1;
+                fi
+                
                 CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR 2>&1);
                 if [ $? -ne 0 ]; then
                     echo $CHART_PACKAGE;
@@ -86,6 +96,7 @@ spec:
 
                 CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]');
                 
+                echo $CHART_TAG >> /tmp/charts/results.txt
                 mv $CHART_PACKAGE /tmp/charts;
               fi
 
@@ -119,22 +130,21 @@ spec:
       args:
         - '-c'
         - >
-            for CHART in /tmp/charts/*;
+            for CHART in /tmp/charts/*.tar.gz;
             do
-
               echo $CHART;
               if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
-                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART" --cacert $(params.CUSTOM_CA_CERT_PATH) -w %{http_code} 2> /dev/null |tail -n 1)
+                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART" --cacert $(params.CUSTOM_CA_CERT_PATH) -w %{http_code} 2> /dev/null |tail -n 1);
               else
-                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART" -w %{http_code} 2> /dev/null |tail -n 1)
+                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART" -w %{http_code} 2> /dev/null |tail -n 1);
               fi
             
               if [ $RESULT -ne 200 ]; then
-                echo "error: got exit code $RESULT when uploading package to nexus"
+                echo "error: got exit code $RESULT when uploading package to nexus";
                 exit 1;
               fi
             done
-    - name: "update-build-tag"
+    - name: "update-tags"
       image: 'stakater/pipeline-toolbox:v0.0.36'
       resources: {}
       workingDir: $(workspaces.source.path)
@@ -157,7 +167,7 @@ spec:
               chmod 400 "${HOME}/.git-credentials";
               chmod 400 "${HOME}/.gitconfig";
             fi
-          
+
             git config --global --add safe.directory /workspace/source;
             git config --global --add user.email "tekton@csn.se";
             git config --global --add user.name "tekton";
@@ -165,6 +175,14 @@ spec:
             if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
               git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH);
             fi
+
+            cat /tmp/charts/results.txt | while read CHART;
+            do
+              git tag -am "Bump version to $CHART" "$CHART";
+              if [ $? -ne 0 ]; then
+                exit 1;
+              fi
+            done
 
             git tag --force pipeline-last-successful-build;
             git push --force --tags;
