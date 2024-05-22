@@ -26,6 +26,11 @@ spec:
       volumeMounts:
         - mountPath: /tmp/charts
           name: charts
+      env:
+        - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
+          value: $(workspaces.basic-auth.bound)
+        - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
+          value: $(workspaces.basic-auth.path)
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
