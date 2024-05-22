@@ -17,38 +17,6 @@ spec:
       description: Helm registry credentials secret name
       default: "helm-reg-creds"  
   steps:
-    - name: "config-git-auth"
-      args:
-        - '-c'
-        - >
-          if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials"
-            cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig"
-            chmod 400 "${HOME}/.git-credentials"
-            chmod 400 "${HOME}/.gitconfig"
-          fi
-        
-          git config --global --add safe.directory /workspace/source;
-          git config --global --add user.email "tekton@csn.se";
-          git config --global --add user.name "tekton";
-
-          if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
-            git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
-          fi
-
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65532
-      command:
-        - /bin/bash
-      env:
-        - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
-          value: $(workspaces.basic-auth.bound)
-        - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
-          value: $(workspaces.basic-auth.path)
-      image: 'stakater/pipeline-toolbox:v0.0.36'
-      resources: {}
-      workingDir: $(workspaces.source.path)
     - name: "helm-package"
       image: 'stakater/pipeline-toolbox:v0.0.36'
       resources: {}
@@ -64,6 +32,20 @@ spec:
       args:
         - '-c'
         - >
+            if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
+              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials"
+              cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig"
+              chmod 400 "${HOME}/.git-credentials"
+              chmod 400 "${HOME}/.gitconfig"
+            fi
+          
+            git config --global --add safe.directory /workspace/source;
+            git config --global --add user.email "tekton@csn.se";
+            git config --global --add user.name "tekton";
+
+            if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
+              git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
+            fi
 
             LAST_SUCCESSFUL_BUILD="pipeline-last-successful-build";
 
