@@ -52,6 +52,8 @@ spec:
           value: $(params.custom-ca-path)
         - name: HELM_REG_CREDS_SECRET_NAME
           value: $(params.helm-creds-secret)
+        - name: revision
+          value: $(params.revision)
   workspaces:
     - name: ssl-ca-directory
     - name: source

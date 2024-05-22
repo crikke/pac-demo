@@ -15,7 +15,9 @@ spec:
       type: string
     - name: HELM_REG_CREDS_SECRET_NAME
       description: Helm registry credentials secret name
-      default: "helm-reg-creds"  
+      default: "helm-reg-creds" 
+    - name: revision
+      value: $(params.revision)
   steps:
     - name: "helm-package"
       image: 'stakater/pipeline-toolbox:v0.0.36'
@@ -61,7 +63,7 @@ spec:
 
             echo $LAST_SUCCESSFUL_BUILD;
 
-            git diff-tree --no-commit-id ${LAST_SUCCESSFUL_BUILD} --name-only -r | while read CHART;
+            git diff --no-commit-id ${LAST_SUCCESSFUL_BUILD}..${params.revision} --name-only -r | while read CHART;
             do
             
               if [ $(basename "$CHART") == "Chart.yaml" ]; then
