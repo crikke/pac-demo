@@ -17,7 +17,8 @@ spec:
       description: Helm registry credentials secret name
       default: "helm-reg-creds"  
   steps:
-    - args:
+    - name: "config git auth"
+      args:
         - '-c'
         - >
           if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
@@ -34,73 +35,7 @@ spec:
           if [[ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]]; then
             git config --global http.sslCAInfo $(params.CUSTOM_CA_CERT_PATH)
           fi
-          
 
-          git diff-tree --no-commit-id HEAD --name-only -r | while read CHART;
-          do
-          
-            if [ $(basename "$CHART") == "Chart.yaml" ]; then
-
-              CHART_NAME=$(cat $CHART | awk -F "^name: " 'NF>1{print $2;exit; }')
-              echo "chart name: $CHART_NAME"
-
-              CHART_VERSION=$(cat $CHART | awk -F "^version: " 'NF>1{print $2;exit; }')
-              echo "chart version: $CHART_VERSION"
-
-              CHART_TAG="$CHART_NAME-$CHART_VERSION"
-              echo "chart tag: $CHART_TAG"
-              
-              CHART_DIR=$(dirname $CHART)
-              echo "chart dir: $CHART_DIR"
-        
-              if [ git rev-parse ${TAG} >/dev/null 2>&1 ]; then
-                  echo "chart version $TAG already exist, wont push helmchart ";
-                  continue
-              fi
-
-              CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR 2>&1);
-              if [ $? -ne 0 ]; then
-                  echo $CHART_PACKAGE >> error-list.txt;
-                  continue;
-              fi
-
-              CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]')
-
-              echo "uploading $CHART_PACKAGE."
-
-              if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
-                  RESULT=$(curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH) 2>&1)
-              else
-                  RESULT=$(curl -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" 2>&1)
-              fi
-
-              if [ $? -ne 0 ]; then
-                echo $RESULT >> error-list.txt;
-                continue;
-              fi
-
-              RESULT=$(git tag -am "Bump version to $CHART_TAG" "$CHART_TAG" 2>&1);
-              
-              if [ $? -ne 0 ]; then
-                echo $RESULT >> error-list.txt;
-                continue;
-              fi
-              
-              echo "$CHART_NAME done uploading";
-    
-            fi
-
-          done
-
-          git push --tags;
-          
-          echo "done uploading charts to nexus.";
-          
-          if [ -s error-list.txt ]; then
-            echo "errors occured when processing some charts";
-            cat error-list.txt;
-            exit 1;
-          fi
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -111,22 +46,95 @@ spec:
           value: $(workspaces.basic-auth.bound)
         - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
           value: $(workspaces.basic-auth.path)
+      image: 'stakater/pipeline-toolbox:v0.0.36'
+      resources: {}
+      workingDir: $(workspaces.source.path)
+    - name: "helm package"
+      image: 'stakater/pipeline-toolbox:v0.0.36'
+      resources: {}
+      workingDir: $(workspaces.source.path)
+      command:
+        - /bin/bash
+      volumeMounts:
+        - mountPath: /tmp/charts
+          name: charts
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      args:
+        - '-c'
+        - >
+
+            LAST_SUCCESSFUL_BUILD="pipeline-last-successful-build";
+
+            if ! [[ git rev-parse ${LAST_SUCCESSFUL_BUILD} >/dev/null 2>&1 ]]; then
+              LAST_SUCCESSFUL_BUILD=$(git rev-list --parents HEAD --max-parents=0);
+            fi
+
+            git diff-tree --no-commit-id ${LAST_SUCCESSFUL_BUILD} --name-only -r | while read CHART;
+            do
+            
+              if [ $(basename "$CHART") == "Chart.yaml" ]; then
+
+                CHART_NAME=$(cat $CHART | awk -F "^name: " 'NF>1{print $2;exit; }')
+                CHART_VERSION=$(cat $CHART | awk -F "^version: " 'NF>1{print $2;exit; }')
+                CHART_TAG="$CHART_NAME-$CHART_VERSION"
+                CHART_DIR=$(dirname $CHART)
+          
+                CHART_PACKAGE=$(helm package --version $CHART_VERSION $CHART_DIR 2>&1);
+                if [ $? -ne 0 ]; then
+                    echo $CHART_PACKAGE >> error-list.txt;
+                    continue;
+                fi
+
+                CHART_PACKAGE=$(echo "$CHART_PACKAGE" | cut -d":" -f2 | tr -d '[:space:]');
+                
+                mv $CHART_PACKAGE /tmp/charts
+              fi
+
+            done
+    - name: "upload helmcharts to nexus"
+      image: 'stakater/pipeline-toolbox:v0.0.36'
+      resources: {}
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      command:
+        - /bin/bash
+      volumeMounts:
+        - mountPath: /tmp/charts
+          name: charts
+      env:
         - name: REG_PASSWORD
           valueFrom:
             secretKeyRef:
               name: $(params.HELM_REG_CREDS_SECRET_NAME)
               key: password
-              optional: true
         - name: REG_USER
           valueFrom:
             secretKeyRef:
               name: $(params.HELM_REG_CREDS_SECRET_NAME)  
               key: username
-              optional: true
-      image: 'stakater/pipeline-toolbox:v0.0.36'
-      name: push-main-tag
-      resources: {}
-      workingDir: $(workspaces.source.path)
+      args:
+        - '-c'
+        - >
+            for CHART in /tmp/charts;
+            do
+              if [ "$(params.CUSTOM_CA_CERT_PATH)" != "" ]; then
+                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" --cacert $(params.CUSTOM_CA_CERT_PATH) -w %{http_code} 2> /dev/null |tail -n 1)
+              else
+                  RESULT=$(curl -I -u "${REG_USER}":"${REG_PASSWORD}" $(params.REGISTRY) --upload-file "$CHART_PACKAGE" -w %{http_code} 2> /dev/null |tail -n 1)
+              fi
+            
+              if [ $RESULT -ne 200 ]; then
+                echo "error: got exit code $RESULT when uploading package to nexus"
+                exit 1;
+              fi
+            done
+  volumes:
+    - name: charts
+      emptyDir: {}
   workspaces:
     - name: source
     - name: ssh-directory
